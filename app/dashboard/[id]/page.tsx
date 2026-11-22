@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -8,18 +9,15 @@ import ApplicationForm from "@/components/ApplicationForm";
 import { FaBriefcase } from "react-icons/fa";
 import { clearAuth, getAuthHeaders } from "@/library/clientAuth";
 
-export default function EditApplication() {
-  const params = useParams();
-  const id = params?.id as string;
-
+function EditApplicationContent() {
+  const params = useParams<{ id: string }>();
+  const id = params.id;
   const router = useRouter();
 
   const [item, setItem] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
-
     async function load() {
       try {
         const res = await fetch(`/api/applications/${id}`, {
@@ -27,7 +25,7 @@ export default function EditApplication() {
         });
 
         if (!res.ok) {
-          if (res.status === 401) {
+          if (res.status == 401) {
             clearAuth();
           }
 
@@ -46,7 +44,9 @@ export default function EditApplication() {
       }
     }
 
-    load();
+    if (id) {
+      load();
+    }
   }, [id, router]);
 
   return (
@@ -84,5 +84,13 @@ export default function EditApplication() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<p className="p-6">Loading application...</p>}>
+      <EditApplicationContent />
+    </Suspense>
   );
 }
