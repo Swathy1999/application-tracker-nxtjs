@@ -1,25 +1,25 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import ApplicationForm from "@/components/ApplicationForm";
 import { FaBriefcase } from "react-icons/fa";
 import { clearAuth, getAuthHeaders } from "@/library/clientAuth";
 
-interface EditApplicationProps {
-  params: Promise<{ id: string }>;
-}
+export default function EditApplication() {
+  const params = useParams();
+  const id = params?.id as string;
 
-export default function EditApplication({ params }: EditApplicationProps) {
-  const { id } = use(params);
   const router = useRouter();
 
   const [item, setItem] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     async function load() {
       try {
         const res = await fetch(`/api/applications/${id}`, {
@@ -27,7 +27,7 @@ export default function EditApplication({ params }: EditApplicationProps) {
         });
 
         if (!res.ok) {
-          if (res.status == 401) {
+          if (res.status === 401) {
             clearAuth();
           }
 
@@ -39,7 +39,7 @@ export default function EditApplication({ params }: EditApplicationProps) {
         const data = await res.json();
         setItem(data);
       } catch (error) {
-        console.error("Error loading application:", error);
+        console.error(error);
         toast.error("Failed to load application");
       } finally {
         setLoading(false);
